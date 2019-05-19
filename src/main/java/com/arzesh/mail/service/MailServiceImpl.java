@@ -23,7 +23,9 @@ import com.amazonaws.services.simpleemail.model.SendEmailRequest;
 import com.amazonaws.services.simpleemail.model.SendEmailResult;
 import com.amazonaws.services.sns.model.MessageAttributeValue;
 import com.arzesh.config.AWSProperties;
-import com.arzesh.exception.SmsException;
+import com.arzesh.exception.MailThrottleException;
+import com.arzesh.exception.MsgSenderException;
+import com.google.common.util.concurrent.RateLimiter;
 
 @Service
 public class MailServiceImpl implements MailService {
@@ -33,20 +35,26 @@ public class MailServiceImpl implements MailService {
     @Autowired
     private AWSProperties awsProperties;
     private Map<String, MessageAttributeValue> smsAttributes = new HashMap<String, MessageAttributeValue>();
+    private RateLimiter limiter;
     String HTMLBODY;
 
     @PostConstruct
     private void init() {
 	// The HTML body for the email.
 	HTMLBODY = "<h1>Amazon SES test (AWS SDK for Java)</h1>" + "<p>" + awsProperties.getEmailBody() + "</p>";
+	limiter = RateLimiter.create(awsProperties.getMailThrotlePerSecond());
     }
 
     @Override
     public String sendMail(String toAddress) {
-	
+
 	boolean valid = EmailValidator.getInstance().isValid(toAddress);
-	if(!valid){
-	    throw new SmsException("Email address is not valid "+ toAddress);
+	if (!valid) {
+	    throw new MsgSenderException("Email address is not valid " + toAddress);
+	}
+	boolean tryAcquire = limiter.tryAcquire();
+	if (!tryAcquire) {
+	    throw new MailThrottleException("Mail sending limit reach plz wait for some time");
 	}
 
 	String messageId = null;
@@ -70,7 +78,7 @@ public class MailServiceImpl implements MailService {
 
 	} catch (SdkClientException e) {
 	    LOGGER.error("Error while sending the message {}", e);
-	    throw new SmsException("Error while sending the message", e);
+	    throw new MsgSenderException("Error while sending the message", e);
 	}
 	return messageId;
     }

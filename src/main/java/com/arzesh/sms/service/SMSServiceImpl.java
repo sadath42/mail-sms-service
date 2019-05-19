@@ -18,7 +18,7 @@ import com.amazonaws.services.sns.model.MessageAttributeValue;
 import com.amazonaws.services.sns.model.PublishRequest;
 import com.amazonaws.services.sns.model.PublishResult;
 import com.arzesh.config.AWSProperties;
-import com.arzesh.exception.SmsException;
+import com.arzesh.exception.MsgSenderException;
 
 @Service
 public class SMSServiceImpl implements SMSService {
@@ -54,7 +54,7 @@ public class SMSServiceImpl implements SMSService {
 
 	} catch (SdkClientException e) {
 	    LOGGER.error("Error while sending the message {}", e);
-	    throw new SmsException("Error while sending the message", e);
+	    throw new MsgSenderException("Error while sending the message", e);
 	}
 	return messageId;
     }

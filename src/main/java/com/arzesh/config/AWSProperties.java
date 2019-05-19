@@ -15,6 +15,7 @@ public class AWSProperties {
     private String emailSubject;
     private String emailBody;
     private String fromAddress;
+    private double mailThrotlePerSecond;
 
     public String getFromAddress() {
 	return fromAddress;
@@ -78,6 +79,14 @@ public class AWSProperties {
 
     public void setPhoneNumber(String phoneNumber) {
 	PhoneNumber = phoneNumber;
+    }
+
+    public void setMailThrotlePerSecond(double mailThrotlePerSecond) {
+        this.mailThrotlePerSecond = mailThrotlePerSecond;
+    }
+
+    public double getMailThrotlePerSecond() {
+	return mailThrotlePerSecond;
     }
 
 }

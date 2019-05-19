@@ -11,9 +11,15 @@ import com.arzesh.model.ErrorResponse;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler
-    public ResponseEntity<ErrorResponse> handleSMSException(SmsException smsException) {
+    public ResponseEntity<ErrorResponse> handleSMSException(MsgSenderException smsException) {
 	return new ResponseEntity<ErrorResponse>(new ErrorResponse(smsException.getMessage()),
 		HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ErrorResponse> handleMailThroteel(MailThrottleException mailThrottleException) {
+	return new ResponseEntity<ErrorResponse>(new ErrorResponse(mailThrottleException.getMessage()),
+		HttpStatus.TOO_MANY_REQUESTS);
     }
 
 }
